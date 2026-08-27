@@ -1,0 +1,19 @@
+lbPool:
+  name: lb-pool
+  cidr: "10.200.1.0/24"
+
+bgpPeerConfig:
+  name: frr-peer
+  authSecretRef: bgp-auth-secret
+
+bgpAdvertisement:
+  name: bgp-advertisements
+  advertiseLabel: bgp
+
+bgpClusterConfig:
+  name: cilium-bgp
+  localASN: 65000
+  localPort: 1790
+  peerName: frr
+  peerASN: 65100
+  peerConfigRef: frr-peer

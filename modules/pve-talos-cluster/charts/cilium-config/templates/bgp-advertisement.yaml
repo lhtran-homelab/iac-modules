@@ -1,0 +1,18 @@
+apiVersion: cilium.io/v2
+kind: CiliumBGPAdvertisement
+metadata:
+  name: {{ .Values.bgpAdvertisement.name }}
+  labels:
+    advertise: {{ .Values.bgpAdvertisement.advertiseLabel }}
+spec:
+  advertisements:
+    - advertisementType: Service
+      service:
+        addresses:
+          - LoadBalancerIP
+        selector:
+          matchExpressions:
+            - key: RandomKey
+              operator: NotIn
+              values:
+                - never-used-value

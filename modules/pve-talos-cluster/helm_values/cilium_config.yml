@@ -1,0 +1,19 @@
+lbPool:
+  name: lb-pool
+  cidr: "${cilium_lb_svc_cidr}"
+
+bgpPeerConfig:
+  name: frr-peer
+  authSecretRef: bgp-auth-secret
+
+bgpAdvertisement:
+  name: bgp-advertisements
+  advertiseLabel: bgp
+
+bgpClusterConfig:
+  name: cilium-bgp
+  localASN: ${cilium_bgp_local_asn}
+  localPort: ${cilium_bgp_port}
+  peerName: frr
+  peerASN: ${cilium_bgp_remote_asn}
+  peerConfigRef: frr-peer

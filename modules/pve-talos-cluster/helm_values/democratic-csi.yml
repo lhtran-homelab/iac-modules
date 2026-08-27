@@ -1,0 +1,22 @@
+csiDriver:
+  name: "org.democratic-csi.nvmeof"
+storageClasses:
+  - name: freenas-api-nvmeof
+    defaultClass: false
+    reclaimPolicy: Delete
+    volumeBindingMode: Immediate
+    allowVolumeExpansion: true
+    parameters:
+      fsType: xfs
+    mountOptions: []
+    secrets:
+      provisioner-secret:
+      controller-publish-secret:
+      node-stage-secret:
+      node-publish-secret:
+      controller-expand-secret:
+volumeSnapshotClasses: []
+driver:
+  existingConfigSecret: freenas-api-nvmeof-driver-config
+  config:
+    driver: freenas-api-nvmeof

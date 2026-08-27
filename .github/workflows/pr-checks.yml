@@ -1,0 +1,210 @@
+name: PR Checks
+
+on:
+  pull_request:
+    branches:
+      - master
+    types:
+      - opened
+      - edited
+      - reopened
+      - synchronize
+      - labeled
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  validate-title:
+    name: Validate Conventional Commit Title
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Validate title
+        uses: amannn/action-semantic-pull-request@v6
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          types: |
+            feat
+            fix
+            docs
+            style
+            refactor
+            perf
+            test
+            build
+            ci
+            chore
+            revert
+
+  detect-module-changes:
+    name: Detect Changed Modules
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    outputs:
+      modules: ${{ steps.changes.outputs.modules }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Build changed-module matrix
+        id: changes
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+
+          declare -a changed_modules=()
+
+          while IFS= read -r -d '' changed_file; do
+            case "$changed_file" in
+              modules/*/*)
+                module="${changed_file#modules/}"
+                module="${module%%/*}"
+
+                # Ignore deleted modules and reject unexpected directory names.
+                if [[ -d "modules/$module" && "$module" =~ ^[A-Za-z0-9._-]+$ ]]; then
+                  changed_modules+=("$module")
+                fi
+                ;;
+            esac
+          done < <(git diff --name-only -z "$BASE_SHA" "$HEAD_SHA")
+
+          modules_json="$(
+            jq -cn --args '$ARGS.positional | unique' "${changed_modules[@]}"
+          )"
+
+          echo "modules=$modules_json" >> "$GITHUB_OUTPUT"
+          echo "Changed Terraform modules: $modules_json"
+
+  terraform-check:
+    name: Terraform Check - ${{ matrix.module }}
+    needs: detect-module-changes
+    if: needs.detect-module-changes.outputs.modules != '[]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    strategy:
+      fail-fast: false
+      matrix:
+        module: ${{ fromJSON(needs.detect-module-changes.outputs.modules) }}
+
+    concurrency:
+      group: pr-${{ github.event.pull_request.number }}-terraform-${{ matrix.module }}
+      cancel-in-progress: true
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v4
+
+      - name: Check formatting
+        run: >-
+          terraform
+          -chdir=modules/${{ matrix.module }}
+          fmt
+          -check
+          -diff
+          -recursive
+
+      - name: Initialize without a backend
+        run: >-
+          terraform
+          -chdir=modules/${{ matrix.module }}
+          init
+          -backend=false
+          -input=false
+
+      - name: Validate
+        run: >-
+          terraform
+          -chdir=modules/${{ matrix.module }}
+          validate
+          -no-color
+
+      - name: Setup TFLint
+        uses: terraform-linters/setup-tflint@v6
+        with:
+          tflint_version: ${{ env.TFLINT_VERSION }}
+          cache: true
+
+      - name: Initialize TFLint
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: tflint --chdir=modules/${{ matrix.module }} --init
+
+      - name: Run TFLint
+        run: tflint --chdir=modules/${{ matrix.module }} --format=compact
+
+  e2e-pve-talos-cluster:
+    name: E2E - pve-talos-cluster
+    needs:
+      - detect-module-changes
+      - terraform-check
+    if: >-
+      needs.terraform-check.result == 'success' &&
+      contains(fromJSON(needs.detect-module-changes.outputs.modules), 'pve-talos-cluster') &&
+      contains(github.event.pull_request.labels.*.name, 'run-e2e-tests') &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: self-hosted
+    environment: e2e-pve-talos-cluster
+    timeout-minutes: 60
+
+    concurrency:
+      group: e2e-pve-talos-cluster
+      cancel-in-progress: false
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v4
+
+      - name: Initialize without a backend
+        env:
+          TF_IN_AUTOMATION: "true"
+          TF_INPUT: "false"
+        run: >-
+          terraform
+          -chdir=modules/pve-talos-cluster
+          init
+          -backend=false
+          -input=false
+
+      - name: Run native Terraform E2E test
+        env:
+          TF_IN_AUTOMATION: "true"
+          TF_INPUT: "false"
+          TF_VAR_proxmox_api_url: ${{ vars.PROXMOX_API_URL }}
+          TF_VAR_proxmox_api_token_id: ${{ secrets.PROXMOX_API_TOKEN_ID }}
+          TF_VAR_proxmox_api_token_secret: ${{ secrets.PROXMOX_API_TOKEN_SECRET }}
+          TF_VAR_proxmox_ssh_user: ${{ secrets.PROXMOX_SSH_USER }}
+          TF_VAR_proxmox_ssh_private_key: ${{ secrets.PROXMOX_SSH_PRIVATE_KEY }}
+          TF_VAR_cilium_bgp_secret: ${{ secrets.CILIUM_BGP_SECRET }}
+          TF_VAR_democratic_csi_truenas_host: ${{ vars.DEMOCRATIC_CSI_TRUENAS_HOST }}
+          TF_VAR_democratic_csi_truenas_api_key: ${{ secrets.DEMOCRATIC_CSI_TRUENAS_API_KEY }}
+          TF_VAR_pihole_url: ${{ vars.PIHOLE_URL }}
+          TF_VAR_pihole_password: ${{ secrets.PIHOLE_PASSWORD }}
+        run: >-
+          terraform
+          -chdir=modules/pve-talos-cluster
+          test
+          -filter=tests/e2e.tftest.hcl
+          -no-color

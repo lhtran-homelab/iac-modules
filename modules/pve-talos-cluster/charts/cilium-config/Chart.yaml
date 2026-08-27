@@ -1,0 +1,6 @@
+apiVersion: v2
+name: cilium-config
+description: Cilium LB-IPAM and BGP control plane resources (IP pool, peer config, advertisements, cluster config)
+type: application
+version: 0.1.0
+appVersion: "1.0.0"

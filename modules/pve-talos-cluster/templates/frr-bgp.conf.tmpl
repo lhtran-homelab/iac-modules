@@ -1,0 +1,17 @@
+router bgp ${cilium_bgp_remote_asn}
+  bgp router-id ${cilium_bgp_remote_router_id}
+  bgp ebgp-requires-policy
+  neighbor CILIUM peer-group
+  neighbor CILIUM remote-as ${cilium_bgp_local_asn}
+  neighbor CILIUM password ${cilium_bgp_secret}
+  neighbor CILIUM port ${cilium_bgp_port}
+  bgp listen range ${cluster_node_network} peer-group CILIUM
+  address-family ipv4
+    neighbor CILIUM activate
+    neighbor CILIUM route-map ALLOW-LB-SVC in
+
+ip prefix-list LB-SVC seq 10 permit ${cilium_lb_svc_cidr} le 32
+
+route-map ALLOW-LB-SVC permit 10
+  match ip address prefix-list LB-SVC
+exit

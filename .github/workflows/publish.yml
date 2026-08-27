@@ -1,0 +1,140 @@
+name: Publish Terraform Module
+
+on:
+  push:
+    tags:
+      - "*-v*.*.*"
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    name: Publish ${{ github.ref_name }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    concurrency:
+      group: publish-${{ github.ref_name }}
+      cancel-in-progress: false
+
+    steps:
+      - name: Resolve release metadata
+        id: release
+        shell: bash
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+
+          # Release Please prefixes tags in a monorepo, for example:
+          # pve-talos-cluster-v1.2.3.
+          if [[ "$RELEASE_TAG" =~ ^([A-Za-z0-9._-]+)-v([0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
+            module="${BASH_REMATCH[1]}"
+            version="v${BASH_REMATCH[2]}"
+          else
+            echo "Unsupported release tag: $RELEASE_TAG" >&2
+            echo "Expected <module>-vX.Y.Z." >&2
+            exit 1
+          fi
+
+          echo "tag=$RELEASE_TAG" >> "$GITHUB_OUTPUT"
+          echo "module=$module" >> "$GITHUB_OUTPUT"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "asset=${RELEASE_TAG}.zip" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout release tag
+        uses: actions/checkout@v7
+
+      - name: Verify module exists
+        shell: bash
+        env:
+          MODULE: ${{ steps.release.outputs.module }}
+        run: |
+          set -euo pipefail
+
+          if [[ ! -d "modules/$MODULE" ]]; then
+            echo "Module directory does not exist: modules/$MODULE" >&2
+            exit 1
+          fi
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v4
+
+      - name: Check formatting
+        run: >-
+          terraform
+          -chdir=modules/${{ steps.release.outputs.module }}
+          fmt
+          -check
+          -diff
+          -recursive
+
+      - name: Initialize without a backend
+        env:
+          TF_IN_AUTOMATION: "true"
+          TF_INPUT: "false"
+        run: >-
+          terraform
+          -chdir=modules/${{ steps.release.outputs.module }}
+          init
+          -backend=false
+          -input=false
+
+      - name: Validate module
+        run: >-
+          terraform
+          -chdir=modules/${{ steps.release.outputs.module }}
+          validate
+          -no-color
+
+      - name: Build source archive and checksum
+        shell: bash
+        env:
+          ASSET: ${{ steps.release.outputs.asset }}
+          MODULE: ${{ steps.release.outputs.module }}
+          RELEASE_TAG: ${{ steps.release.outputs.tag }}
+        run: |
+          set -euo pipefail
+
+          # Archive the module subtree so its Terraform files are at the ZIP
+          # root. git archive includes only files committed in the release tag.
+          git archive \
+            --format=zip \
+            --output="$ASSET" \
+            "$RELEASE_TAG:modules/$MODULE"
+          sha256sum "$ASSET" > "${ASSET}.sha256"
+
+      - name: Wait for GitHub Release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ steps.release.outputs.tag }}
+        run: |
+          set -euo pipefail
+
+          # The tag push event can be delivered just before Release Please
+          # finishes creating the corresponding GitHub Release.
+          for attempt in {1..30}; do
+            if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+              exit 0
+            fi
+
+            echo "Waiting for release $RELEASE_TAG (attempt $attempt/30)..."
+            sleep 2
+          done
+
+          echo "GitHub Release was not found for tag $RELEASE_TAG." >&2
+          exit 1
+
+      - name: Upload assets to GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ASSET: ${{ steps.release.outputs.asset }}
+          RELEASE_TAG: ${{ steps.release.outputs.tag }}
+        run: >-
+          gh release upload
+          "$RELEASE_TAG"
+          "$ASSET"
+          "${ASSET}.sha256"
+          --clobber

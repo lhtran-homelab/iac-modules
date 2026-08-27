@@ -1,0 +1,12 @@
+apiVersion: cilium.io/v2
+kind: CiliumBGPPeerConfig
+metadata:
+  name: {{ .Values.bgpPeerConfig.name }}
+spec:
+  authSecretRef: {{ .Values.bgpPeerConfig.authSecretRef }}
+  families:
+    - afi: ipv4
+      safi: unicast
+      advertisements:
+        matchLabels:
+          advertise: {{ .Values.bgpAdvertisement.advertiseLabel }}

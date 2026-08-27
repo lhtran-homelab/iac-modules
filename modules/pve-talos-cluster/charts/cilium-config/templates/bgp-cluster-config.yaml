@@ -1,0 +1,18 @@
+apiVersion: cilium.io/v2
+kind: CiliumBGPClusterConfig
+metadata:
+  name: {{ .Values.bgpClusterConfig.name }}
+spec:
+  bgpInstances:
+    - name: instance-{{ .Values.bgpClusterConfig.localASN }}
+      localASN: {{ .Values.bgpClusterConfig.localASN }}
+      localPort: {{ .Values.bgpClusterConfig.localPort }}
+      peers:
+        - name: {{ .Values.bgpClusterConfig.peerName }}
+          peerASN: {{ .Values.bgpClusterConfig.peerASN }}
+          autoDiscovery:
+            mode: DefaultGateway
+            defaultGateway:
+              addressFamily: ipv4
+          peerConfigRef:
+            name: {{ .Values.bgpClusterConfig.peerConfigRef }}
