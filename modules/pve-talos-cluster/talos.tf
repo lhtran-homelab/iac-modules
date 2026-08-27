@@ -202,6 +202,7 @@ resource "null_resource" "wait_for_cilium_crds" {
 
       if kubectl --kubeconfig="$tmpdir/kubeconfig" \
         wait \
+        --for=create \
         --for=condition=Established \
         --timeout=5m \
         "$crd"; then
