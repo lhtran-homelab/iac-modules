@@ -1,5 +1,5 @@
 locals {
-  talos_version = "v${var.talos_version}"
+  talos_version    = "v${var.talos_version}"
   cluster_endpoint = "https://${var.talos_cluster_virtual_ip_hostname}:6443"
   controller_nodes = [
     for i in range(var.vm_controller_count) : {

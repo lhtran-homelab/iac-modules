@@ -21,9 +21,9 @@ terraform {
       version = "~> 3.7"
     }
     pihole = {
-      source = "ryanwholey/pihole"
+      source  = "ryanwholey/pihole"
       version = "2.0.0-beta.1"
-    }    
+    }
   }
 }
 
@@ -49,6 +49,6 @@ provider "helm" {
 }
 
 provider "pihole" {
-  url = var.pihole_url
+  url      = var.pihole_url
   password = var.pihole_password
 }
