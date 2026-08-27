@@ -1,4 +1,6 @@
 terraform {
+  required_version = "~> 1.10"
+
   required_providers {
     proxmox = {
       source  = "bpg/proxmox"
@@ -24,6 +26,10 @@ terraform {
       source  = "ryanwholey/pihole"
       version = "2.0.0-beta.1"
     }
+    http = {
+      source  = "hashicorp/http"
+      version = "~> 3.6"
+    }    
   }
 }
 
