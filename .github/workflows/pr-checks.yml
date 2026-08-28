@@ -138,9 +138,6 @@ jobs:
 
       - name: Setup TFLint
         uses: terraform-linters/setup-tflint@v6
-        with:
-          tflint_version: ${{ env.TFLINT_VERSION }}
-          cache: true
 
       - name: Initialize TFLint
         env:
