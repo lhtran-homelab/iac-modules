@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.0](https://github.com/lhtran-homelab/iac-modules/compare/pve-talos-cluster-v0.1.0...pve-talos-cluster-v0.2.0) (2026-08-28)
+
+
+### Features
+
+* change to dhcp for vm ([#4](https://github.com/lhtran-homelab/iac-modules/issues/4)) ([954a012](https://github.com/lhtran-homelab/iac-modules/commit/954a012f0c4cdc50cae26cc3e4c84db3a0e9ddc0))
+
 ## [0.1.0](https://github.com/lhtran-homelab/iac-modules/compare/pve-talos-cluster-v0.0.1...pve-talos-cluster-v0.1.0) (2026-08-28)
 
 
