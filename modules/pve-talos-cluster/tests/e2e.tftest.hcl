@@ -2,14 +2,10 @@
 variables {
   proxmox_nodes = ["pve2"]
 
-  vm_storage                          = "truenas-nvme"
-  vm_image_storage                    = "truenas-nfs"
-  vm_image_randomize_file_name        = true
-  vm_network_pve_bridge               = "vmbr100"
-  vm_network_subnet                   = "172.16.100.0/24"
-  vm_network_gateway                  = "172.16.100.1"
-  vm_network_first_controller_hostnum = 231
-  vm_network_first_worker_hostnum     = 232
+  vm_storage                   = "truenas-nvme"
+  vm_image_storage             = "truenas-nfs"
+  vm_image_randomize_file_name = true
+  vm_network_pve_bridge        = "vmbr100"
 
   vm_controller_count        = 1
   vm_controller_cpu_cores    = 2

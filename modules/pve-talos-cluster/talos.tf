@@ -19,7 +19,7 @@ data "talos_machine_configuration" "controller" {
       apiVersion = "v1alpha1"
       kind       = "Layer2VIPConfig"
       name       = var.talos_cluster_virtual_ip
-      link       = "eth0"
+      link       = local.controller_nodes[0].interface
     })],
     [yamlencode({
       cluster = {
@@ -85,18 +85,11 @@ data "talos_machine_configuration" "worker" {
   config_patches     = [for c in local.common_machine_configs : yamlencode(c)]
 }
 
-data "talos_client_configuration" "this" {
-  cluster_name         = var.talos_cluster_name
-  client_configuration = talos_machine_secrets.this.client_configuration
-  endpoints            = [for node in local.controller_nodes : split("/", node.address)[0]]
-}
-
 resource "talos_machine_configuration_apply" "controller" {
   count                       = var.vm_controller_count
   machine_configuration_input = data.talos_machine_configuration.controller.machine_configuration
-  endpoint                    = split("/", local.controller_nodes[count.index].address)[0]
-  node                        = split("/", local.controller_nodes[count.index].address)[0]
-  client_configuration        = data.talos_client_configuration.this.client_configuration
+  node                        = local.controller_nodes[count.index].ipv4
+  client_configuration        = talos_machine_secrets.this.client_configuration
   apply_mode                  = "auto"
   depends_on                  = [proxmox_virtual_environment_vm.talos-controller]
   lifecycle {
@@ -109,9 +102,8 @@ resource "talos_machine_configuration_apply" "controller" {
 resource "talos_machine_configuration_apply" "worker" {
   count                       = var.vm_worker_count
   machine_configuration_input = data.talos_machine_configuration.worker.machine_configuration
-  node                        = split("/", local.worker_nodes[count.index].address)[0]
-  endpoint                    = split("/", local.worker_nodes[count.index].address)[0]
-  client_configuration        = data.talos_client_configuration.this.client_configuration
+  node                        = local.worker_nodes[count.index].ipv4
+  client_configuration        = talos_machine_secrets.this.client_configuration
   depends_on                  = [proxmox_virtual_environment_vm.talos-worker]
   lifecycle {
     replace_triggered_by = [
@@ -122,34 +114,13 @@ resource "talos_machine_configuration_apply" "worker" {
 
 resource "talos_machine_bootstrap" "this" {
   client_configuration = talos_machine_secrets.this.client_configuration
-  endpoint             = split("/", local.controller_nodes[0].address)[0]
-  node                 = split("/", local.controller_nodes[0].address)[0]
+  node                 = local.controller_nodes[0].ipv4
   depends_on = [
     talos_machine_configuration_apply.controller,
     talos_machine_configuration_apply.worker
   ]
 }
 
-data "talos_cluster_health" "this" {
-  client_configuration = talos_machine_secrets.this.client_configuration
-  control_plane_nodes  = [for node in local.controller_nodes : split("/", node.address)[0]]
-  worker_nodes         = [for node in local.worker_nodes : split("/", node.address)[0]]
-  endpoints            = [for node in local.controller_nodes : split("/", node.address)[0]]
-  timeouts = {
-    read = "5m"
-  }
-  depends_on = [talos_machine_bootstrap.this, helm_release.cilium]
-}
-
-resource "talos_cluster_kubeconfig" "this" {
-  client_configuration = talos_machine_secrets.this.client_configuration
-  endpoint             = split("/", local.controller_nodes[0].address)[0]
-  node                 = split("/", local.controller_nodes[0].address)[0]
-  depends_on           = [talos_machine_bootstrap.this]
-}
-
-# kube-apiserver can take a bit to start accepting connections right after bootstrap,
-# so poll it before any helm_release tries to talk to the cluster.
 resource "null_resource" "wait_for_kube_apiserver" {
   triggers = {
     bootstrap = talos_machine_bootstrap.this.id
@@ -172,9 +143,28 @@ resource "null_resource" "wait_for_kube_apiserver" {
   depends_on = [talos_machine_bootstrap.this, talos_cluster_kubeconfig.this, pihole_dns_record.record]
 }
 
-# the cilium CRDs need a moment to become Established after helm_release.cilium
-# completes, otherwise helm_release.cilium_config fails with "no matches for kind"
-# on the very first bootstrap.
+data "talos_cluster_health" "this" {
+  client_configuration = talos_machine_secrets.this.client_configuration
+  control_plane_nodes  = [for node in local.controller_nodes : node.ipv4]
+  worker_nodes         = [for node in local.worker_nodes : node.ipv4]
+  endpoints            = [for node in local.controller_nodes : node.ipv4]
+  timeouts = {
+    read = "5m"
+  }
+  depends_on = [talos_machine_bootstrap.this, helm_release.cilium]
+}
+
+resource "talos_cluster_kubeconfig" "this" {
+  client_configuration = talos_machine_secrets.this.client_configuration
+  node                 = local.controller_nodes[0].ipv4
+}
+
+data "talos_client_configuration" "this" {
+  cluster_name         = var.talos_cluster_name
+  client_configuration = talos_machine_secrets.this.client_configuration
+  endpoints            = [for node in local.controller_nodes : node.ipv4]
+}
+
 resource "null_resource" "wait_for_cilium_crds" {
   triggers = {
     cilium = helm_release.cilium.id
