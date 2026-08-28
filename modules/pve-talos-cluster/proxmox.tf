@@ -33,8 +33,8 @@ resource "proxmox_download_file" "talos_image" {
 resource "proxmox_virtual_environment_vm" "talos-controller" {
   count = var.vm_controller_count
 
-  name        = local.controller_nodes[count.index].name
-  description = "Managed by Terraform  \nCluster: ${var.talos_cluster_name}  \nName: controller ${count.index + 1}"
+  name        = local.controller_node_names[count.index]
+  description = "Managed by Terraform  \nCluster: ${var.talos_cluster_name}  \nName: controller ${local.controller_node_names[count.index]}"
   tags        = ["terraform", "talos"]
   node_name   = var.proxmox_nodes[count.index % length(var.proxmox_nodes)]
 
@@ -88,8 +88,7 @@ resource "proxmox_virtual_environment_vm" "talos-controller" {
     datastore_id = var.vm_storage
     ip_config {
       ipv4 {
-        address = local.controller_nodes[count.index].address
-        gateway = var.vm_network_gateway
+        address = "dhcp"
       }
     }
   }
@@ -105,8 +104,8 @@ resource "proxmox_virtual_environment_vm" "talos-controller" {
 resource "proxmox_virtual_environment_vm" "talos-worker" {
   count = var.vm_worker_count
 
-  name        = local.worker_nodes[count.index].name
-  description = "Managed by Terraform  \nCluster: ${var.talos_cluster_name}  \nName: worker ${count.index + 1}"
+  name        = local.worker_node_names[count.index]
+  description = "Managed by Terraform  \nCluster: ${var.talos_cluster_name}  \nName: worker ${local.worker_node_names[count.index]}"
   tags        = ["terraform", "talos"]
   node_name   = var.proxmox_nodes[count.index % length(var.proxmox_nodes)]
 
@@ -159,8 +158,7 @@ resource "proxmox_virtual_environment_vm" "talos-worker" {
     datastore_id = var.vm_storage
     ip_config {
       ipv4 {
-        address = local.worker_nodes[count.index].address
-        gateway = var.vm_network_gateway
+        address = "dhcp"
       }
     }
   }

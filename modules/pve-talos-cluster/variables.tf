@@ -15,11 +15,6 @@ variable "proxmox_api_token_secret" {
   sensitive   = true
 }
 
-# variable "proxmox_ssh_host" {
-#   description = "The hostname or IP address of the Proxmox node for SSH."
-#   type        = string
-# }
-
 variable "proxmox_ssh_user" {
   description = "The username for SSH access to the Proxmox node."
   type        = string
@@ -47,30 +42,10 @@ variable "vm_image_storage" {
   description = "The Proxmox storage for the ISO files."
 }
 
-variable "vm_network_gateway" {
-  description = "The IP network gateway of the cluster nodes"
-  type        = string
-}
-
-variable "vm_network_subnet" {
-  description = "The network of the cluster nodes"
-  type        = string
-}
-
 variable "vm_network_pve_bridge" {
   type        = string
   description = "The network bridge for the VMs."
   default     = "vmbr0"
-}
-
-variable "vm_network_first_controller_hostnum" {
-  description = "The hostnum of the first controller host"
-  type        = number
-}
-
-variable "vm_network_first_worker_hostnum" {
-  description = "The hostnum of the first worker host"
-  type        = number
 }
 
 variable "vm_controller_count" {
@@ -213,12 +188,6 @@ variable "cilium_bgp_remote_asn" {
   type        = number
   description = "The remote ASN to use for BGP."
   default     = 65100
-}
-
-variable "cilium_bgp_remote_router_id" {
-  type        = string
-  description = "The router ID for the remote BGP peer."
-  default     = "192.168.1.1"
 }
 
 variable "cilium_lb_svc_cidr" {
