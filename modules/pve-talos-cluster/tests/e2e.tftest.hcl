@@ -1,6 +1,6 @@
 # This block defines variables specifically for the test run
 variables {
-  proxmox_nodes        = ["pve2"]
+  proxmox_nodes = ["pve2"]
 
   vm_storage                          = "truenas-nvme"
   vm_image_storage                    = "truenas-nfs"
@@ -21,13 +21,13 @@ variables {
   vm_worker_memory       = 2048
   vm_worker_disk_size_gb = 40
 
-  talos_cluster_name     = "e2e-tftest"
+  talos_cluster_name                = "e2e-tftest"
   talos_cluster_virtual_ip_hostname = "e2e-tftest.lhtran.com"
   talos_cluster_virtual_ip          = "172.16.100.230"
-  talos_architecture     = "amd64"
-  talos_version          = "1.13.8"
-  talos_schematic_id     = "e15f3b626ab4a557519983f80f0530ab962ceb961e49c38f577da35dfeee9fa4" #siderolabs/iscsi-tools, siderolabs/nfs-utils, siderolabs/nvme-cli, siderolabs/qemu-guest-agent
-  kubernetes_version     = "1.36.2"
+  talos_architecture                = "amd64"
+  talos_version                     = "1.13.8"
+  talos_schematic_id                = "e15f3b626ab4a557519983f80f0530ab962ceb961e49c38f577da35dfeee9fa4" #siderolabs/iscsi-tools, siderolabs/nfs-utils, siderolabs/nvme-cli, siderolabs/qemu-guest-agent
+  kubernetes_version                = "1.36.2"
   kubernetes_api_gateway = {
     version = "1.6.1"
     channel = "standard"
@@ -54,11 +54,11 @@ run "create_cluster" {
 }
 
 provider "kubernetes" {
-  alias = "smoke"
-  host = yamldecode(run.create_cluster.kubeconfig).clusters[0].cluster.server
+  alias                  = "smoke"
+  host                   = yamldecode(run.create_cluster.kubeconfig).clusters[0].cluster.server
   cluster_ca_certificate = base64decode(yamldecode(run.create_cluster.kubeconfig).clusters[0].cluster["certificate-authority-data"])
-  client_certificate = base64decode(yamldecode(run.create_cluster.kubeconfig).users[0].user["client-certificate-data"])
-  client_key = base64decode(yamldecode(run.create_cluster.kubeconfig).users[0].user["client-key-data"])
+  client_certificate     = base64decode(yamldecode(run.create_cluster.kubeconfig).users[0].user["client-certificate-data"])
+  client_key             = base64decode(yamldecode(run.create_cluster.kubeconfig).users[0].user["client-key-data"])
 }
 
 run "run_smoke_pod" {

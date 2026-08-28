@@ -4,7 +4,10 @@
   "bump-patch-for-minor-pre-major": false,
   "packages": {
     "modules/pve-talos-cluster": {
-      "release-type": "terraform-module"
+      "release-type": "terraform-module",
+      "package-name": "pve-talos-cluster",
+      "component": "pve-talos-cluster",
+      "include-component-in-tag": true
     }
   }
 }

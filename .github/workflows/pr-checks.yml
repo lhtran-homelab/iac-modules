@@ -138,9 +138,6 @@ jobs:
 
       - name: Setup TFLint
         uses: terraform-linters/setup-tflint@v6
-        with:
-          tflint_version: ${{ env.TFLINT_VERSION }}
-          cache: true
 
       - name: Initialize TFLint
         env:
@@ -176,6 +173,8 @@ jobs:
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_wrapper: false        
 
       - name: Initialize without a backend
         env:
@@ -186,7 +185,6 @@ jobs:
           -chdir=modules/pve-talos-cluster
           init
           -backend=false
-          -input=false
 
       - name: Run native Terraform E2E test
         env:

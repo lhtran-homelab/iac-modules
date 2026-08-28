@@ -182,8 +182,16 @@ resource "null_resource" "wait_for_cilium_crds" {
 
   provisioner "local-exec" {
     command = <<-EOT
+      set -eu
+
+      if ! command -v curl >/dev/null 2>&1; then
+        echo "curl is required but was not found on PATH" >&2
+        exit 127
+      fi
+
       tmpdir=$(mktemp -d)
       trap 'rm -rf "$tmpdir"' EXIT
+      umask 077
 
       cat <<'CERT' > "$tmpdir/ca.crt"
       ${base64decode(talos_cluster_kubeconfig.this.kubernetes_client_configuration.ca_certificate)}
@@ -195,18 +203,28 @@ resource "null_resource" "wait_for_cilium_crds" {
       ${base64decode(talos_cluster_kubeconfig.this.kubernetes_client_configuration.client_key)}
       CERT
 
+      api_url="${talos_cluster_kubeconfig.this.kubernetes_client_configuration.host}/apis/cilium.io/v2/ciliumloadbalancerippools?limit=1"
+      echo "Waiting for the CiliumLoadBalancerIPPool API to become available"
+
       for i in $(seq 1 60); do
-        if kubectl --server="${talos_cluster_kubeconfig.this.kubernetes_client_configuration.host}" \
-          --certificate-authority="$tmpdir/ca.crt" \
-          --client-certificate="$tmpdir/client.crt" \
-          --client-key="$tmpdir/client.key" \
-          get crd ciliumloadbalancerippools.cilium.io -o jsonpath='{.status.conditions[?(@.type=="Established")].status}' 2>/dev/null | grep -q True; then
-          echo "cilium CRDs are established"
+        if curl \
+          --fail \
+          --silent \
+          --connect-timeout 5 \
+          --max-time 10 \
+          --cacert "$tmpdir/ca.crt" \
+          --cert "$tmpdir/client.crt" \
+          --key "$tmpdir/client.key" \
+          --output /dev/null \
+          "$api_url"; then
+          echo "CiliumLoadBalancerIPPool API is available"
           exit 0
         fi
+
         sleep 5
       done
-      echo "Timed out waiting for cilium CRDs to become established"
+
+      echo "Timed out waiting for the CiliumLoadBalancerIPPool API" >&2
       exit 1
     EOT
   }

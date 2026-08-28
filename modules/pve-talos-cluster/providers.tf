@@ -1,4 +1,6 @@
 terraform {
+  required_version = "~> 1.10"
+
   required_providers {
     proxmox = {
       source  = "bpg/proxmox"
@@ -21,9 +23,13 @@ terraform {
       version = "~> 3.7"
     }
     pihole = {
-      source = "ryanwholey/pihole"
+      source  = "ryanwholey/pihole"
       version = "2.0.0-beta.1"
-    }    
+    }
+    http = {
+      source  = "hashicorp/http"
+      version = "~> 3.6"
+    }
   }
 }
 
@@ -49,6 +55,6 @@ provider "helm" {
 }
 
 provider "pihole" {
-  url = var.pihole_url
+  url      = var.pihole_url
   password = var.pihole_password
 }
