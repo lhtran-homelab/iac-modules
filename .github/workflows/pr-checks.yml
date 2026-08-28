@@ -174,9 +174,6 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Setup kubectl
-        uses: azure/setup-kubectl@v5
-
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v4
         with:
