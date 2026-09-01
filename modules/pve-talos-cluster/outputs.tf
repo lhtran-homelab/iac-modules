@@ -16,9 +16,15 @@ output "frr_bgp_config" {
 }
 
 output "kubeconfig" {
-  description = "Kubeconfig for the Talos Kubernetes cluster"
-  value       = talos_cluster_kubeconfig.this.kubeconfig_raw
+  description = "Kubernetes client configuration and raw kubeconfig"
   sensitive   = true
+  value = {
+    raw                    = talos_cluster_kubeconfig.this.kubeconfig_raw
+    host                   = talos_cluster_kubeconfig.this.kubernetes_client_configuration.host
+    client_certificate     = talos_cluster_kubeconfig.this.kubernetes_client_configuration.client_certificate
+    client_key             = talos_cluster_kubeconfig.this.kubernetes_client_configuration.client_key
+    cluster_ca_certificate = talos_cluster_kubeconfig.this.kubernetes_client_configuration.ca_certificate
+  }
 }
 
 output "talosconfig" {

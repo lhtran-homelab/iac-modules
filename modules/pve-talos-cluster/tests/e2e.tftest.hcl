@@ -51,10 +51,10 @@ run "create_cluster" {
 
 provider "kubernetes" {
   alias                  = "smoke"
-  host                   = yamldecode(run.create_cluster.kubeconfig).clusters[0].cluster.server
-  cluster_ca_certificate = base64decode(yamldecode(run.create_cluster.kubeconfig).clusters[0].cluster["certificate-authority-data"])
-  client_certificate     = base64decode(yamldecode(run.create_cluster.kubeconfig).users[0].user["client-certificate-data"])
-  client_key             = base64decode(yamldecode(run.create_cluster.kubeconfig).users[0].user["client-key-data"])
+  host                   = run.create_cluster.kubeconfig.host
+  cluster_ca_certificate = base64decode(run.create_cluster.kubeconfig.cluster_ca_certificate)
+  client_certificate     = base64decode(run.create_cluster.kubeconfig.client_certificate)
+  client_key             = base64decode(run.create_cluster.kubeconfig.client_key)
 }
 
 run "run_smoke_pod" {
