@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.1](https://github.com/lhtran-homelab/iac-modules/compare/pve-talos-cluster-v0.2.0...pve-talos-cluster-v0.2.1) (2026-09-01)
+
+
+### Bug Fixes
+
+* **pve-talos-cluster:** improve kubeconfig output([#6](https://github.com/lhtran-homelab/iac-modules/issues/6)) ([7469922](https://github.com/lhtran-homelab/iac-modules/commit/74699223bfd111f44c838ffe7f57e620a0bfe0e7))
+
 ## [0.2.0](https://github.com/lhtran-homelab/iac-modules/compare/pve-talos-cluster-v0.1.0...pve-talos-cluster-v0.2.0) (2026-08-28)
 
 
