@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.1](https://github.com/lhtran-homelab/iac-modules/compare/pve-talos-cluster-v0.3.0...pve-talos-cluster-v0.3.1) (2026-09-04)
+
+
+### Bug Fixes
+
+* **pve-talos-cluster:** add output depends_on- [#10](https://github.com/lhtran-homelab/iac-modules/issues/10) ([76b294c](https://github.com/lhtran-homelab/iac-modules/commit/76b294ce7da76feadfa511b7218ec6c7768bf14f))
+
 ## [0.3.0](https://github.com/lhtran-homelab/iac-modules/compare/pve-talos-cluster-v0.2.1...pve-talos-cluster-v0.3.0) (2026-09-04)
 
 
