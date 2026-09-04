@@ -253,6 +253,16 @@ variable "democratic_csi_truenas_nvmeof_port_index" {
   default     = 1
 }
 
+variable "s3_oidc" {
+  description = "Publish the OIDC discovery documents to a public S3 bucket. When null, the API server keeps serving them itself."
+
+  type = object({
+    region = optional(string, "us-east-1")
+  })
+
+  default = null
+}
+
 variable "pihole_url" {
   type        = string
   description = "The URL for the Pi-hole instance."
