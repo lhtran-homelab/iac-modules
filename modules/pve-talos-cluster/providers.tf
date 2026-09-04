@@ -30,6 +30,10 @@ terraform {
       source  = "hashicorp/http"
       version = "~> 3.6"
     }
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 6.0"
+    }
   }
 }
 
@@ -58,3 +62,8 @@ provider "pihole" {
   url      = var.pihole_url
   password = var.pihole_password
 }
+
+provider "aws" {
+  region = "us-east-1"
+}
+

@@ -27,6 +27,16 @@ output "kubeconfig" {
   }
 }
 
+output "oidc" {
+  description = "Service account token issuer and JWKS discovery endpoints"
+  value = {
+    issuer       = local.oidc_issuer
+    jwks_uri     = local.oidc_jwks_uri
+    hosted_on_s3 = local.s3_oidc_enabled
+    bucket       = local.s3_oidc_enabled ? local.oidc_bucket : null
+  }
+}
+
 output "talosconfig" {
   description = "Talosconfig for the Talos cluster"
   value       = data.talos_client_configuration.this.talos_config

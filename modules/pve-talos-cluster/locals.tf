@@ -1,6 +1,23 @@
 locals {
   talos_version    = "v${var.talos_version}"
   cluster_endpoint = "https://${var.talos_cluster_virtual_ip_hostname}:6443"
+
+  s3_oidc_enabled = var.s3_oidc != null
+  oidc_region     = try(var.s3_oidc.region, "us-east-1")
+  oidc_bucket     = "oidc-${join("", data.aws_caller_identity.current[*].account_id)}-${var.talos_cluster_name}"
+  oidc_issuer     = local.s3_oidc_enabled ? "https://${local.oidc_bucket}.s3.${local.oidc_region}.amazonaws.com" : local.cluster_endpoint
+  oidc_jwks_uri   = "${local.oidc_issuer}/openid/v1/jwks"
+
+  apiserver_extra_args = merge(
+    {
+      anonymous-auth           = "true"
+      service-account-issuer   = local.oidc_issuer
+      service-account-jwks-uri = local.oidc_jwks_uri
+    },
+    local.s3_oidc_enabled ? {
+      api-audiences = join(",", [local.oidc_issuer, local.cluster_endpoint])
+    } : {}
+  )
   controller_node_names = [
     for i in range(var.vm_controller_count) : "${var.talos_cluster_name}-controller-${i + 1}"
   ]
@@ -28,6 +45,7 @@ locals {
     ])
   ]
   kube_prism_port = 7445
+
   common_machine_configs = [
     {
       machine = {

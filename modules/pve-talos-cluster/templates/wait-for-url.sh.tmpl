@@ -1,0 +1,62 @@
+set -eu
+
+if ! command -v curl >/dev/null 2>&1; then
+  echo "curl is required but was not found on PATH" >&2
+  exit 127
+fi
+
+tmpdir=$(mktemp -d)
+trap 'rm -rf "$tmpdir"' EXIT
+umask 077
+
+set --
+
+%{~ if ca_cert_pem != "" }
+cat <<'CERT' > "$tmpdir/ca.crt"
+${ca_cert_pem}
+CERT
+
+set -- "$@" --cacert "$tmpdir/ca.crt"
+%{~ endif }
+
+%{~ if client_cert_pem != "" }
+cat <<'CERT' > "$tmpdir/client.crt"
+${client_cert_pem}
+CERT
+
+cat <<'CERT' > "$tmpdir/client.key"
+${client_key_pem}
+CERT
+
+set -- "$@" --cert "$tmpdir/client.crt" --key "$tmpdir/client.key"
+%{~ endif }
+
+echo "${description}"
+
+code=000
+attempt=0
+
+while [ "$attempt" -lt ${attempts} ]; do
+  attempt=$((attempt + 1))
+
+  # curl already writes 000 on connection failure, so only guard against no output at all.
+  code=$(curl \
+    --silent \
+    --output /dev/null \
+    --write-out '%%{http_code}' \
+    "$@" \
+    --connect-timeout 5 \
+    --max-time 10 \
+    "${url}") || true
+  [ -n "$code" ] || code=000
+
+  if [ "$code" = "${expected_status}" ]; then
+    echo "Ready: ${url}"
+    exit 0
+  fi
+
+  sleep ${interval_seconds}
+done
+
+echo "Timed out waiting for ${url} (last HTTP status $code)" >&2
+exit 1

@@ -19,7 +19,7 @@ variables {
 
   talos_cluster_name                = "e2e-tftest"
   talos_cluster_virtual_ip_hostname = "e2e-tftest.lhtran.com"
-  talos_cluster_virtual_ip          = "172.16.100.230"
+  talos_cluster_virtual_ip          = "172.16.100.49"
   talos_architecture                = "amd64"
   talos_version                     = "1.13.8"
   talos_schematic_id                = "e15f3b626ab4a557519983f80f0530ab962ceb961e49c38f577da35dfeee9fa4" #siderolabs/iscsi-tools, siderolabs/nfs-utils, siderolabs/nvme-cli, siderolabs/qemu-guest-agent
@@ -38,6 +38,9 @@ variables {
   helm_democratic_csi_version                                       = "0.15.1"
   democratic_csi_truenas_zfs_dataset_parent_name                    = "RAIDZ1-SSD/TALOS-NVME/vols"
   democratic_csi_truenas_zfs_detached_snapshots_dataset_parent_name = "RAIDZ1-SSD/TALOS-NVME/snaps"
+  s3_oidc = {
+    region = "us-east-1"
+  }
 }
 
 run "create_cluster" {
