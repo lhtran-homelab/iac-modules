@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0](https://github.com/lhtran-homelab/iac-modules/compare/pve-talos-cluster-v0.2.1...pve-talos-cluster-v0.3.0) (2026-09-04)
+
+
+### Features
+
+* **pve-talos-cluster:** add s3 oidc endpoint ([#8](https://github.com/lhtran-homelab/iac-modules/issues/8)) ([c65b09e](https://github.com/lhtran-homelab/iac-modules/commit/c65b09e5a128cb613d0826040fe2e4a51e5c2597))
+
 ## [0.2.1](https://github.com/lhtran-homelab/iac-modules/compare/pve-talos-cluster-v0.2.0...pve-talos-cluster-v0.2.1) (2026-09-01)
 
 
