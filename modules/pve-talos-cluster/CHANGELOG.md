@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.2](https://github.com/lhtran-homelab/iac-modules/compare/pve-talos-cluster-v0.3.1...pve-talos-cluster-v0.3.2) (2026-09-08)
+
+
+### Bug Fixes
+
+* **pve-talos-cluster:** fix wrong bgp advertisement ([#12](https://github.com/lhtran-homelab/iac-modules/issues/12)) ([6c2618a](https://github.com/lhtran-homelab/iac-modules/commit/6c2618aa31ef883be4256e23d3b34f5d3409754a))
+
 ## [0.3.1](https://github.com/lhtran-homelab/iac-modules/compare/pve-talos-cluster-v0.3.0...pve-talos-cluster-v0.3.1) (2026-09-04)
 
 
