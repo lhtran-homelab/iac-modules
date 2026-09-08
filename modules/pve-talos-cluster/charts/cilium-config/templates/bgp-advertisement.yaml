@@ -10,9 +10,9 @@ spec:
       service:
         addresses:
           - LoadBalancerIP
-        selector:
-          matchExpressions:
-            - key: RandomKey
-              operator: NotIn
-              values:
-                - never-used-value
+      selector:
+        matchExpressions:
+          - key: RandomKey
+            operator: NotIn
+            values:
+              - never-used-value
