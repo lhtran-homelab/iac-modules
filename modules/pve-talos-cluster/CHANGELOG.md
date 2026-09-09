@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.4](https://github.com/lhtran-homelab/iac-modules/compare/pve-talos-cluster-v0.3.3...pve-talos-cluster-v0.3.4) (2026-09-09)
+
+
+### Bug Fixes
+
+* **pve-talos-cluster:** add idp oidc ([#16](https://github.com/lhtran-homelab/iac-modules/issues/16)) ([bcc41e4](https://github.com/lhtran-homelab/iac-modules/commit/bcc41e41127f0a3376c64213537c46da8ce623aa))
+
 ## [0.3.3](https://github.com/lhtran-homelab/iac-modules/compare/pve-talos-cluster-v0.3.2...pve-talos-cluster-v0.3.3) (2026-09-09)
 
 
