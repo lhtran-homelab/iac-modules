@@ -1,43 +1,39 @@
-resource "kubernetes_job_v1" "smoke" {
+resource "kubernetes_deployment_v1" "load_balancer_backend" {
   metadata {
-    name      = "terraform-e2e-smoke"
+    name      = "terraform-e2e-load-balancer"
     namespace = "default"
   }
 
-  wait_for_completion = true
-
   spec {
-    backoff_limit = 0
+    replicas = 1
+
+    selector {
+      match_labels = {
+        app = "terraform-e2e-load-balancer"
+      }
+    }
 
     template {
       metadata {
         labels = {
-          app = "terraform-e2e-smoke"
+          app = "terraform-e2e-load-balancer"
         }
       }
 
       spec {
-        restart_policy = "Never"
-
         container {
-          name  = "smoke"
+          name  = "http"
           image = "busybox:1.36.1"
 
-          command = [
-            "/bin/sh",
-            "-ec",
-            <<-EOT
-              nslookup kubernetes.default.svc.cluster.local
-              probe="terraform-e2e-storage-$(date +%s)"
-              printf '%s' "$${probe}" > /data/probe
-              test "$(cat /data/probe)" = "$${probe}"
-              sync
-            EOT
-          ]
+          command = ["/bin/sh", "-ec", "mkdir -p /www; printf '%s' terraform-e2e-load-balancer > /data/index.html; ln -s /data/index.html /www/index.html; httpd -f -p 8080 -h /www"]
 
           volume_mount {
             name       = "smoke-storage"
             mount_path = "/data"
+          }
+
+          port {
+            container_port = 8080
           }
         }
 
@@ -46,12 +42,6 @@ resource "kubernetes_job_v1" "smoke" {
 
           ephemeral {
             volume_claim_template {
-              metadata {
-                labels = {
-                  app = "terraform-e2e-smoke"
-                }
-              }
-
               spec {
                 access_modes       = ["ReadWriteOnce"]
                 storage_class_name = "freenas-api-nvmeof"
@@ -69,9 +59,37 @@ resource "kubernetes_job_v1" "smoke" {
       }
     }
   }
+}
+
+resource "kubernetes_service_v1" "smoke" {
+  depends_on = [kubernetes_deployment_v1.load_balancer_backend]
+
+  metadata {
+    name      = "terraform-e2e-smoke"
+    namespace = "default"
+  }
+
+  spec {
+    selector = {
+      app = "terraform-e2e-load-balancer"
+    }
+
+    port {
+      port        = 80
+      target_port = 8080
+    }
+
+    type = "LoadBalancer"
+  }
+
+  wait_for_load_balancer = true
 
   timeouts {
     create = "5m"
-    delete = "5m"
   }
+}
+
+data "http" "load_balancer" {
+  url        = "http://${kubernetes_service_v1.smoke.status[0].load_balancer[0].ingress[0].ip}/"
+  depends_on = [kubernetes_deployment_v1.load_balancer_backend]
 }

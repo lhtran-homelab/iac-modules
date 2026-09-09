@@ -32,7 +32,7 @@ variables {
   helm_cilium_version   = "1.20.0"
   cilium_bgp_port       = 1790
   cilium_lb_svc_cidr    = "10.200.254.0/24"
-  cilium_bgp_local_asn  = 65000
+  cilium_bgp_local_asn  = 64512
   cilium_bgp_remote_asn = 65100
 
   helm_democratic_csi_version                                       = "0.15.1"
@@ -72,7 +72,12 @@ run "run_smoke_pod" {
   }
 
   assert {
-    condition     = output.completed
-    error_message = "The Kubernetes storage smoke test did not complete."
+    condition     = output.load_balancer_ip != null && output.load_balancer_ip != ""
+    error_message = "The smoke-pod LoadBalancer did not receive an external IP."
+  }
+
+  assert {
+    condition     = output.http_backend_response == "terraform-e2e-load-balancer"
+    error_message = "The LoadBalancer did not return the expected persistent-backend response."
   }
 }

@@ -10,10 +10,10 @@ router bgp ${cilium_bgp_remote_asn}
 %{ endfor ~}
   address-family ipv4
     neighbor ${cluster_name} activate
-    neighbor ${cluster_name} route-map ALLOW-LB-SVC in
+    neighbor ${cluster_name} route-map allow-${cluster_name}-svc in
 
-ip prefix-list LB-SVC seq 10 permit ${cilium_lb_svc_cidr} le 32
+ip prefix-list ${cluster_name}-svc seq 10 permit ${cilium_lb_svc_cidr} le 32
 
-route-map ALLOW-LB-SVC permit 10
-  match ip address prefix-list LB-SVC
+route-map allow-${cluster_name}-svc permit 10
+  match ip address prefix-list ${cluster_name}-svc
 exit
