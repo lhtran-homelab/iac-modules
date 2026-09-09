@@ -272,7 +272,7 @@ variable "idp_oidc" {
     groups_prefix        = optional(string, "oidc:")
     cluster_admin_groups = list(string)
   })
-  default = null
+  default   = null
   sensitive = true
 }
 
