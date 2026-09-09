@@ -7,6 +7,7 @@ resource "talos_machine_secrets" "this" {
 }
 
 data "talos_machine_configuration" "controller" {
+  count              = var.vm_controller_count
   cluster_name       = var.talos_cluster_name
   machine_type       = "controlplane"
   talos_version      = local.talos_version
@@ -29,22 +30,39 @@ data "talos_machine_configuration" "controller" {
         inlineManifests = local.inline_manifests
       }
     })],
+    [yamlencode({
+      machine = {
+        nodeLabels = {
+          "proxmox.com/nodename" = var.proxmox_nodes[count.index % length(var.proxmox_nodes)]
+        }
+      }
+    })]
   )
 }
 
 data "talos_machine_configuration" "worker" {
+  count              = var.vm_worker_count
   cluster_name       = var.talos_cluster_name
   machine_type       = "worker"
   talos_version      = local.talos_version
   kubernetes_version = var.kubernetes_version
   cluster_endpoint   = local.cluster_endpoint
   machine_secrets    = talos_machine_secrets.this.machine_secrets
-  config_patches     = [for c in local.common_machine_configs : yamlencode(c)]
+  config_patches = concat(
+    [for c in local.common_machine_configs : yamlencode(c)],
+    [yamlencode({
+      machine = {
+        nodeLabels = {
+          "proxmox.com/nodename" = var.proxmox_nodes[count.index % length(var.proxmox_nodes)]
+        }
+      }
+    })]
+  )
 }
 
 resource "talos_machine_configuration_apply" "controller" {
   count                       = var.vm_controller_count
-  machine_configuration_input = data.talos_machine_configuration.controller.machine_configuration
+  machine_configuration_input = data.talos_machine_configuration.controller[count.index].machine_configuration
   node                        = local.controller_nodes[count.index].ipv4
   client_configuration        = talos_machine_secrets.this.client_configuration
   apply_mode                  = "auto"
@@ -58,7 +76,7 @@ resource "talos_machine_configuration_apply" "controller" {
 
 resource "talos_machine_configuration_apply" "worker" {
   count                       = var.vm_worker_count
-  machine_configuration_input = data.talos_machine_configuration.worker.machine_configuration
+  machine_configuration_input = data.talos_machine_configuration.worker[count.index].machine_configuration
   node                        = local.worker_nodes[count.index].ipv4
   client_configuration        = talos_machine_secrets.this.client_configuration
   depends_on                  = [proxmox_virtual_environment_vm.talos-worker]
