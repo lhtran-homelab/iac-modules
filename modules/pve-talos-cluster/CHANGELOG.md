@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.3](https://github.com/lhtran-homelab/iac-modules/compare/pve-talos-cluster-v0.3.2...pve-talos-cluster-v0.3.3) (2026-09-09)
+
+
+### Bug Fixes
+
+* **pve-talos-cluster:** add svc type lb test with external ip ([#14](https://github.com/lhtran-homelab/iac-modules/issues/14)) ([1539710](https://github.com/lhtran-homelab/iac-modules/commit/1539710eb7d60b08d64ce1405edaff8b40a66176))
+
 ## [0.3.2](https://github.com/lhtran-homelab/iac-modules/compare/pve-talos-cluster-v0.3.1...pve-talos-cluster-v0.3.2) (2026-09-08)
 
 
