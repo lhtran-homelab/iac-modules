@@ -1,15 +1,15 @@
 data "aws_caller_identity" "current" {
-  count = local.s3_oidc_enabled ? 1 : 0
+  count = local.sa_s3_oidc_enabled ? 1 : 0
 }
 
 resource "aws_s3_bucket" "oidc" {
-  count  = local.s3_oidc_enabled ? 1 : 0
+  count  = local.sa_s3_oidc_enabled ? 1 : 0
   bucket = local.oidc_bucket
   region = local.oidc_region
 }
 
 resource "aws_s3_bucket_public_access_block" "oidc" {
-  count                   = local.s3_oidc_enabled ? 1 : 0
+  count                   = local.sa_s3_oidc_enabled ? 1 : 0
   bucket                  = aws_s3_bucket.oidc[0].id
   region                  = local.oidc_region
   block_public_acls       = true
@@ -19,7 +19,7 @@ resource "aws_s3_bucket_public_access_block" "oidc" {
 }
 
 resource "aws_s3_bucket_policy" "oidc_discovery" {
-  count  = local.s3_oidc_enabled ? 1 : 0
+  count  = local.sa_s3_oidc_enabled ? 1 : 0
   bucket = aws_s3_bucket.oidc[0].id
   region = local.oidc_region
   policy = jsonencode({
@@ -40,7 +40,7 @@ resource "aws_s3_bucket_policy" "oidc_discovery" {
 }
 
 resource "null_resource" "wait_for_anonymous_jwks" {
-  count = local.s3_oidc_enabled ? 1 : 0
+  count = local.sa_s3_oidc_enabled ? 1 : 0
 
   triggers = {
     bootstrap = talos_machine_bootstrap.this.id
@@ -63,7 +63,7 @@ resource "null_resource" "wait_for_anonymous_jwks" {
 }
 
 data "http" "cluster_jwks" {
-  count       = local.s3_oidc_enabled ? 1 : 0
+  count       = local.sa_s3_oidc_enabled ? 1 : 0
   url         = "${talos_cluster_kubeconfig.this.kubernetes_client_configuration.host}/openid/v1/jwks"
   ca_cert_pem = base64decode(talos_cluster_kubeconfig.this.kubernetes_client_configuration.ca_certificate)
 
@@ -78,7 +78,7 @@ data "http" "cluster_jwks" {
 }
 
 resource "aws_s3_object" "oidc_jwks" {
-  count        = local.s3_oidc_enabled ? 1 : 0
+  count        = local.sa_s3_oidc_enabled ? 1 : 0
   bucket       = aws_s3_bucket.oidc[0].id
   region       = local.oidc_region
   key          = "openid/v1/jwks"
@@ -87,7 +87,7 @@ resource "aws_s3_object" "oidc_jwks" {
 }
 
 resource "aws_s3_object" "oidc_openid_configuration" {
-  count        = local.s3_oidc_enabled ? 1 : 0
+  count        = local.sa_s3_oidc_enabled ? 1 : 0
   bucket       = aws_s3_bucket.oidc[0].id
   region       = local.oidc_region
   key          = ".well-known/openid-configuration"

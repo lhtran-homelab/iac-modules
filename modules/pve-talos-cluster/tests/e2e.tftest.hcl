@@ -38,8 +38,16 @@ variables {
   helm_democratic_csi_version                                       = "0.15.1"
   democratic_csi_truenas_zfs_dataset_parent_name                    = "RAIDZ1-SSD/TALOS-NVME/vols"
   democratic_csi_truenas_zfs_detached_snapshots_dataset_parent_name = "RAIDZ1-SSD/TALOS-NVME/snaps"
-  s3_oidc = {
+  sa_s3_oidc = {
     region = "us-east-1"
+  }
+  idp_oidc = {
+    issuer_url           = "https://id.lhtran.com"
+    client_id            = "ff0fd5dd-fb44-47c5-be79-804e620c6fe5" #headlamp app
+    username_claim       = "email"
+    groups_claim         = "groups"
+    groups_prefix        = "oidc:"
+    cluster_admin_groups = ["talos_admin"]
   }
 }
 

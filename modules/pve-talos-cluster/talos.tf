@@ -26,47 +26,7 @@ data "talos_machine_configuration" "controller" {
         apiServer = {
           extraArgs = local.apiserver_extra_args
         }
-        inlineManifests = [
-          {
-            name     = "gateway-api-crds"
-            contents = data.http.gateway_api_crds.response_body
-          },
-          {
-            name     = "allow-anonymous-jwks-discovery"
-            contents = <<-YAML
-              apiVersion: rbac.authorization.k8s.io/v1
-              kind: ClusterRoleBinding
-              metadata:
-                name: allow-anonymous-jwks-discovery
-              subjects:
-                - kind: Group
-                  name: system:unauthenticated
-                  apiGroup: rbac.authorization.k8s.io
-              roleRef:
-                kind: ClusterRole
-                name: system:service-account-issuer-discovery
-                apiGroup: rbac.authorization.k8s.io
-            YAML
-          },
-          {
-            name     = "namespaces"
-            contents = file("${path.module}/talos_inline/namespaces.yml")
-          },
-          {
-            name = "infra-secrets"
-            contents = templatefile("${path.module}/talos_inline/secrets.yml", {
-              cilium_bgp_secret                                                 = var.cilium_bgp_secret
-              democratic_csi_truenas_api_protocol                               = var.democratic_csi_truenas_api_protocol
-              democratic_csi_truenas_host                                       = var.democratic_csi_truenas_host
-              democratic_csi_truenas_api_port                                   = var.democratic_csi_truenas_api_port
-              democratic_csi_truenas_api_key                                    = var.democratic_csi_truenas_api_key
-              democratic_csi_truenas_zfs_dataset_parent_name                    = var.democratic_csi_truenas_zfs_dataset_parent_name
-              democratic_csi_truenas_zfs_detached_snapshots_dataset_parent_name = var.democratic_csi_truenas_zfs_detached_snapshots_dataset_parent_name
-              democratic_csi_truenas_nvmeof_port                                = var.democratic_csi_truenas_nvmeof_port
-              democratic_csi_truenas_nvmeof_port_index                          = var.democratic_csi_truenas_nvmeof_port_index
-            })
-          }
-        ]
+        inlineManifests = local.inline_manifests
       }
     })],
   )
