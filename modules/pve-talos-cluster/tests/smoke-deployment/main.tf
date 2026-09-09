@@ -94,7 +94,7 @@ data "http" "load_balancer" {
   depends_on = [kubernetes_service_v1.smoke]
 
   retry {
-    attempts     = 60
+    attempts     = 10
     min_delay_ms = 1000
     max_delay_ms = 5000
   }

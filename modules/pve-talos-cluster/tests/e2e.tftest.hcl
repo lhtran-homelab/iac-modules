@@ -5,7 +5,7 @@ variables {
   vm_storage                   = "truenas-nvme"
   vm_image_storage             = "truenas-nfs"
   vm_image_randomize_file_name = true
-  vm_network_pve_bridge        = "vmbr100"
+  vm_network_pve_bridge        = "vmbr101"
 
   vm_controller_count        = 1
   vm_controller_cpu_cores    = 2
@@ -19,7 +19,7 @@ variables {
 
   talos_cluster_name                = "e2e-tftest"
   talos_cluster_virtual_ip_hostname = "e2e-tftest.lhtran.com"
-  talos_cluster_virtual_ip          = "172.16.100.49"
+  talos_cluster_virtual_ip          = "172.16.101.49"
   talos_architecture                = "amd64"
   talos_version                     = "1.13.8"
   talos_schematic_id                = "e15f3b626ab4a557519983f80f0530ab962ceb961e49c38f577da35dfeee9fa4" #siderolabs/iscsi-tools, siderolabs/nfs-utils, siderolabs/nvme-cli, siderolabs/qemu-guest-agent
@@ -60,11 +60,11 @@ provider "kubernetes" {
   client_key             = base64decode(run.create_cluster.kubeconfig.client_key)
 }
 
-run "run_smoke_pod" {
+run "run_smoke_deployment" {
   command = apply
 
   module {
-    source = "./tests/smoke-pod"
+    source = "./tests/smoke-deployment"
   }
 
   providers = {
@@ -73,11 +73,11 @@ run "run_smoke_pod" {
 
   assert {
     condition     = output.load_balancer_ip != null && output.load_balancer_ip != ""
-    error_message = "The smoke-pod LoadBalancer did not receive an external IP."
+    error_message = "The smoke-deployment LoadBalancer did not receive an external IP."
   }
 
   assert {
     condition     = output.http_backend_response == "terraform-e2e-load-balancer"
-    error_message = "The LoadBalancer did not return the expected persistent-backend response."
+    error_message = "The smoke-deployment LoadBalancer did not return the expected http-backend response."
   }
 }
