@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.5](https://github.com/lhtran-homelab/iac-modules/compare/pve-talos-cluster-v0.3.4...pve-talos-cluster-v0.3.5) (2026-09-09)
+
+
+### Bug Fixes
+
+* **pve-talos-cluster:** fix proxmox.com nodename label release ([#19](https://github.com/lhtran-homelab/iac-modules/issues/19)) ([8fab52b](https://github.com/lhtran-homelab/iac-modules/commit/8fab52b4063069183a0c8d9d1a94d0f2b2172207))
+
 ## [0.3.4](https://github.com/lhtran-homelab/iac-modules/compare/pve-talos-cluster-v0.3.3...pve-talos-cluster-v0.3.4) (2026-09-09)
 
 
