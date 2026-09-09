@@ -32,8 +32,8 @@ output "oidc" {
   value = {
     issuer       = local.oidc_issuer
     jwks_uri     = local.oidc_jwks_uri
-    hosted_on_s3 = local.s3_oidc_enabled
-    bucket       = local.s3_oidc_enabled ? local.oidc_bucket : null
+    hosted_on_s3 = local.sa_s3_oidc_enabled
+    bucket       = local.sa_s3_oidc_enabled ? local.oidc_bucket : null
   }
   depends_on = [
     aws_s3_bucket_policy.oidc_discovery,

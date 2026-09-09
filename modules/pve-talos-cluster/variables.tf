@@ -253,14 +253,27 @@ variable "democratic_csi_truenas_nvmeof_port_index" {
   default     = 1
 }
 
-variable "s3_oidc" {
+variable "sa_s3_oidc" {
   description = "Publish the OIDC discovery documents to a public S3 bucket. When null, the API server keeps serving them itself."
-
   type = object({
     region = optional(string, "us-east-1")
   })
-
   default = null
+}
+
+variable "idp_oidc" {
+  description = "Configuration for User Authentication OIDC (kube-apiserver IDP)"
+  type = object({
+    issuer_url           = string
+    client_id            = string
+    client_secret        = optional(string)
+    username_claim       = optional(string, "email")
+    groups_claim         = optional(string, "groups")
+    groups_prefix        = optional(string, "oidc:")
+    cluster_admin_groups = list(string)
+  })
+  default   = null
+  sensitive = true
 }
 
 variable "pihole_url" {
