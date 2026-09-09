@@ -91,5 +91,11 @@ resource "kubernetes_service_v1" "smoke" {
 
 data "http" "load_balancer" {
   url        = "http://${kubernetes_service_v1.smoke.status[0].load_balancer[0].ingress[0].ip}/"
-  depends_on = [kubernetes_deployment_v1.load_balancer_backend]
+  depends_on = [kubernetes_service_v1.smoke]
+
+  retry {
+    attempts      = 60
+    min_delay_ms  = 1000
+    max_delay_ms  = 5000
+  }
 }
