@@ -53,7 +53,7 @@ resource "null_resource" "wait_for_anonymous_jwks" {
       client_key_pem   = ""
       url              = "${talos_cluster_kubeconfig.this.kubernetes_client_configuration.host}/openid/v1/jwks"
       expected_status  = "200"
-      attempts         = 60
+      attempts         = 10
       interval_seconds = 5
       description      = "Waiting for anonymous access to the cluster JWKS endpoint"
     })

@@ -130,7 +130,7 @@ resource "null_resource" "wait_for_kube_apiserver" {
       client_key_pem   = ""
       url              = "${talos_cluster_kubeconfig.this.kubernetes_client_configuration.host}/version"
       expected_status  = "200"
-      attempts         = 60
+      attempts         = 10
       interval_seconds = 5
       description      = "Waiting for the kube-apiserver to become ready"
     })
@@ -174,7 +174,7 @@ resource "null_resource" "wait_for_cilium_crds" {
       client_key_pem   = base64decode(talos_cluster_kubeconfig.this.kubernetes_client_configuration.client_key)
       url              = "${talos_cluster_kubeconfig.this.kubernetes_client_configuration.host}/apis/cilium.io/v2/ciliumloadbalancerippools?limit=1"
       expected_status  = "200"
-      attempts         = 60
+      attempts         = 10
       interval_seconds = 5
       description      = "Waiting for the CiliumLoadBalancerIPPool API to become available"
     })
