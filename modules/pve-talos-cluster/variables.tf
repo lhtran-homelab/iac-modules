@@ -52,6 +52,11 @@ variable "vm_controller_count" {
   type        = number
   description = "The number of controller VMs to create."
   default     = 1
+
+  validation {
+    condition     = contains([1, 3], var.vm_controller_count)
+    error_message = "vm_controller_count must be either 1 or 3."
+  }
 }
 
 variable "vm_worker_count" {
