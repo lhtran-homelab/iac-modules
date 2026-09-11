@@ -74,7 +74,8 @@ resource "talos_machine_configuration_apply" "controller" {
   }
   on_destroy = {
     reset    = true
-    graceful = true
+    graceful = false
+    # graceful = var.vm_controller_count > 1
     reboot   = false
   }
 }
