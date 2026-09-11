@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.6](https://github.com/lhtran-homelab/iac-modules/compare/pve-talos-cluster-v0.3.5...pve-talos-cluster-v0.3.6) (2026-09-11)
+
+
+### Bug Fixes
+
+* **pve-talos-cluster:** workaround scale down issue ([#21](https://github.com/lhtran-homelab/iac-modules/issues/21)) ([2df1864](https://github.com/lhtran-homelab/iac-modules/commit/2df1864141ea7ec72a42d1cc49d4ba06c640c927))
+
 ## [0.3.5](https://github.com/lhtran-homelab/iac-modules/compare/pve-talos-cluster-v0.3.4...pve-talos-cluster-v0.3.5) (2026-09-09)
 
 
