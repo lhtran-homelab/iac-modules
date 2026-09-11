@@ -72,6 +72,12 @@ resource "talos_machine_configuration_apply" "controller" {
       proxmox_virtual_environment_vm.talos-controller[count.index]
     ]
   }
+  on_destroy = {
+    reset    = true
+    graceful = false
+    # graceful = var.vm_controller_count > 1
+    reboot = false
+  }
 }
 
 resource "talos_machine_configuration_apply" "worker" {
@@ -84,6 +90,11 @@ resource "talos_machine_configuration_apply" "worker" {
     replace_triggered_by = [
       proxmox_virtual_environment_vm.talos-worker[count.index]
     ]
+  }
+  on_destroy = {
+    reset    = true
+    graceful = true
+    reboot   = false
   }
 }
 
@@ -118,10 +129,11 @@ resource "null_resource" "wait_for_kube_apiserver" {
 }
 
 data "talos_cluster_health" "this" {
-  client_configuration = talos_machine_secrets.this.client_configuration
-  control_plane_nodes  = [for node in local.controller_nodes : node.ipv4]
-  worker_nodes         = [for node in local.worker_nodes : node.ipv4]
-  endpoints            = [for node in local.controller_nodes : node.ipv4]
+  client_configuration   = talos_machine_secrets.this.client_configuration
+  control_plane_nodes    = [for node in local.controller_nodes : node.ipv4]
+  worker_nodes           = [for node in local.worker_nodes : node.ipv4]
+  endpoints              = [for node in local.controller_nodes : node.ipv4]
+  skip_kubernetes_checks = true
   timeouts = {
     read = "5m"
   }
