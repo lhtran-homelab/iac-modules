@@ -76,7 +76,7 @@ resource "talos_machine_configuration_apply" "controller" {
     reset    = true
     graceful = true
     reboot   = false
-  }  
+  }
 }
 
 resource "talos_machine_configuration_apply" "worker" {
